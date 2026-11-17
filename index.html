@@ -42,7 +42,7 @@
   /* ---------- hero ---------- */
   /* Photo on top, text below his feet: nothing sits on his face or body. */
   .hero{position:relative;overflow:hidden;color:#fff;background:var(--bg)}
-  .hero-media{position:relative;height:clamp(380px,62svh,560px);background:linear-gradient(180deg,#1f5fb3,#3e8ee0 45%,#2a9fae 75%,#06223f)}
+  .hero-media{position:relative;overflow:hidden;height:clamp(380px,62svh,560px);background:linear-gradient(180deg,#1f5fb3,#3e8ee0 45%,#2a9fae 75%,#06223f)}
   .hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 58%}
   .hero-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,34,63,.25) 0%,rgba(6,34,63,0) 18%,rgba(6,34,63,0) 62%,var(--bg) 100%)}
   .hero-inner{position:relative;z-index:1;width:100%;margin-top:-64px;padding:0 16px 18px}
@@ -169,13 +169,61 @@
   .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;background:#fff;color:#111;padding:12px 18px;border-radius:999px;
          font-weight:700;font-size:14px;z-index:50;transition:opacity .2s,transform .2s;pointer-events:none;max-width:calc(100% - 32px);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.35)}
   .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* ================= motion: slow, soft, premium ================= */
+  :root{--ease:cubic-bezier(.22,1,.36,1);--ease-in-out:cubic-bezier(.65,0,.35,1)}
+  html{scroll-behavior:smooth}
+  .btn{transition:transform .55s var(--ease),box-shadow .55s var(--ease),filter .4s var(--ease)}
+  .btn:active{transform:scale(.965);transition-duration:.14s}
+  @media (hover:hover){ .btn:hover{filter:brightness(1.06)} }
+  summary,.row{transition:transform .55s var(--ease),background-color .5s var(--ease)}
+  summary:active,.row:active{transform:scale(.985);transition-duration:.16s}
+  details,.row{transition:background-color .6s var(--ease),border-color .6s var(--ease),box-shadow .6s var(--ease)}
+  details.is-open{box-shadow:0 18px 44px rgba(0,0,0,.28)}
+  .chev{transition:transform .7s var(--ease),background-color .4s}
+  details.is-open .chev{transform:rotate(90deg)}
+  details[open]:not(.is-open) .chev{transform:none}
+  .chip{transition:background-color .4s var(--ease),color .4s var(--ease),border-color .4s var(--ease),transform .45s var(--ease)}
+  .chip:active{transform:scale(.94);transition-duration:.12s}
+  input,textarea{transition:border-color .4s var(--ease),background-color .4s var(--ease)}
+  /* card contents drift in after the card opens */
+  .body>*{opacity:0;transform:translateY(10px);transition:opacity .55s var(--ease),transform .7s var(--ease)}
+  details.is-open .body>*{opacity:1;transform:none}
+  details.is-open .body>*:nth-child(2){transition-delay:.07s}
+  details.is-open .body>*:nth-child(3){transition-delay:.14s}
+  details.is-open .body>*:nth-child(4){transition-delay:.21s}
+  /* scroll reveal */
+  .js .reveal{opacity:0;transform:translateY(24px);transition:opacity 1s var(--ease),transform 1.1s var(--ease);transition-delay:var(--d,0s)}
+  .js .reveal.in{opacity:1;transform:none}
+  /* hero parallax (transform set by JS) */
+  .hero-photo{will-change:transform;transform:scale(1.08)}
+  /* sheet + intro + toast: slower, softer */
+  .sheet-backdrop{transition:opacity .6s var(--ease);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  .sheet-panel{transition:transform .7s var(--ease)}
+  .sheet-panel>*{opacity:0;transform:translateY(12px);transition:opacity .5s var(--ease),transform .6s var(--ease)}
+  .sheet.open .sheet-panel>*{opacity:1;transform:none}
+  .sheet.open .sheet-panel>*:nth-child(3){transition-delay:.06s}
+  .sheet.open .sheet-panel>*:nth-child(4){transition-delay:.12s}
+  .sheet.open .sheet-panel>*:nth-child(5){transition-delay:.18s}
+  .sheet.open .sheet-panel>*:nth-child(6){transition-delay:.24s}
+  .js .intro{transition:opacity 1.1s var(--ease),visibility 1.1s}
+  .intro-inner{transition:opacity .8s var(--ease),transform 1s var(--ease)}
+  .js .intro.gone .intro-inner{opacity:0;transform:translateY(-18px) scale(.98)}
+  .intro-bg{animation:drift 16s var(--ease-in-out) infinite alternate}
+  @keyframes drift{from{transform:scale(1.04)}to{transform:scale(1.12) translateY(-1.5%)}}
+  .toast{transition:opacity .5s var(--ease),transform .6s var(--ease)}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    .js .reveal,.body>*,.sheet-panel>*{opacity:1!important;transform:none!important}
+    .hero-photo{transform:none!important}
+  }
   .broken{display:none!important}
   @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
 </style>
 </head>
 <body>
 <div class="intro" id="intro" role="button" tabindex="0" aria-label="Tap to enter, music will play">
-  <img class="intro-bg" src="zabih.jpg" alt="">
+  <img class="intro-bg" fetchpriority="high" decoding="async" src="zabih.jpg" alt="">
   <div class="intro-inner">
     <span class="intro-flag"><img src="usa-flag.jpg" alt=""></span>
     <h2>Zabih <span>Naseri</span></h2>
@@ -207,30 +255,30 @@
   <!-- ============ HERO ============ -->
   <header class="hero">
     <div class="hero-media">
-      <img class="hero-photo js-img" src="zabih.jpg" alt="Zabih standing waist-deep in clear blue lake water under a bright sky">
+      <img class="hero-photo js-img" fetchpriority="high" decoding="async" src="zabih.jpg" alt="Zabih standing waist-deep in clear blue lake water under a bright sky">
       <span class="flag-pill">
-        <span class="flag"><img class="js-img" src="usa-flag.jpg" alt="American flag"></span>
+        <span class="flag"><img class="js-img" decoding="async" src="usa-flag.jpg" alt="American flag"></span>
         Living in New York City, baby
       </span>
     </div>
     <div class="hero-inner">
-      <h1>Zabih <span>Naseri</span></h1>
-      <a class="handle js-ig" href="#" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg>@zabih_naseri</a>
-      <div class="cta-row">
+      <h1 class="reveal" style="--d:.05s">Zabih <span>Naseri</span></h1>
+      <a class="handle js-ig reveal" style="--d:.15s" href="#" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg>@zabih_naseri</a>
+      <div class="cta-row reveal" style="--d:.25s">
         <a class="btn btn-ig js-dm-plain" href="#" target="_blank" rel="noopener">💬 DM me</a>
         <a class="btn btn-light js-ig" href="#" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg>Follow</a>
       </div>
     </div>
   </header>
 
-  <p class="how">💬 Tap one below. <b>Your message gets copied</b>, just paste it in my DMs.</p>
+  <p class="how reveal">💬 Tap one below. <b>Your message gets copied</b>, just paste it in my DMs.</p>
 
   <!-- ============ ACTIONS (all go to IG DM) ============ -->
   <div class="list" id="list">
 
-    <div class="group-label"><span>💵 Paid gigs</span><span class="neg">You name the price, we negotiate</span></div>
+    <div class="group-label reveal"><span>💵 Paid gigs</span><span class="neg">You name the price, we negotiate</span></div>
 
-    <details class="offer" name="act">
+    <details class="offer reveal">
       <summary>
         <span class="ico">💪</span>
         <span class="txt"><strong>Pay me good, I'll do hard things</strong><span class="open-badge">Door of negotiation is open</span></span>
@@ -242,7 +290,7 @@
       </div>
     </details>
 
-    <details name="act">
+    <details class="reveal">
       <summary>
         <span class="ico">🏃</span>
         <span class="txt"><strong>Book a run with me</strong><small>Paid running partner or pacer in NYC</small></span>
@@ -264,7 +312,7 @@
       </div>
     </details>
 
-    <details name="act">
+    <details class="reveal">
       <summary>
         <span class="ico">🔥</span>
         <span class="txt"><strong>Pay me to run it</strong><small>You pick the distance, I post the proof</small></span>
@@ -283,9 +331,9 @@
       </div>
     </details>
 
-    <div class="group-label"><span>💬 Just say hi</span><span class="neg">Free</span></div>
+    <div class="group-label reveal"><span>💬 Just say hi</span><span class="neg">Free</span></div>
 
-    <details name="act">
+    <details class="reveal">
       <summary>
         <span class="ico">📌</span>
         <span class="txt"><strong>Leave me a note</strong><small>Shout-outs, ideas, questions, roasts</small></span>
@@ -302,7 +350,7 @@
       </div>
     </details>
 
-    <a class="row" href="#" data-send="strava">
+    <a class="row reveal" href="#" data-send="strava">
       <span class="ico">👟</span>
       <span class="txt"><strong>Follow my runs on Strava</strong><small>DM me and I'll send my profile</small></span>
       <span class="chev">›</span>
@@ -310,7 +358,7 @@
 
   </div>
 
-  <footer>Zabih Naseri · New York City 🇺🇸</footer>
+  <footer class="reveal">Zabih Naseri · New York City 🇺🇸</footer>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -403,10 +451,80 @@ $("#openDm").addEventListener("click", () => setTimeout(closeSheet, 400));
 $$("[data-close]", sheet).forEach(el => el.addEventListener("click", closeSheet));
 addEventListener("keydown", e => { if (e.key === "Escape" && !sheet.hidden) closeSheet(); });
 
-// Only one card open at a time (fallback for browsers without <details name>).
-$$("details[name=act]").forEach(d => d.addEventListener("toggle", () => {
-  if (d.open) $$("details[name=act]").forEach(o => { if (o !== d) o.open = false; });
+// Cards glide open and closed; only one open at a time.
+const EASE = "cubic-bezier(.22,1,.36,1)";
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const cards = $$("#list details");
+function closedHeight(d) { const cs = getComputedStyle(d); return $("summary", d).offsetHeight + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth); }
+function animateHeight(d, from, to, ms) {
+  if (d._anim) d._anim.cancel();
+  if (reduceMotion) return Promise.resolve();
+  d._anim = d.animate([{ height: from + "px" }, { height: to + "px" }], { duration: ms, easing: EASE });
+  return d._anim.finished.then(() => { d._anim = null; }).catch(() => {});
+}
+function openCard(d) {
+  cards.forEach(o => { if (o !== d && o.open) closeCard(o); });
+  const from = d.offsetHeight;
+  d.open = true;
+  const to = d.offsetHeight;
+  requestAnimationFrame(() => d.classList.add("is-open"));
+  animateHeight(d, from, to, 650).then(() => {
+    const r = d.getBoundingClientRect();
+    if (r.bottom > innerHeight - 16) scrollBy({ top: Math.min(r.bottom - innerHeight + 24, r.top - 16), behavior: "smooth" });
+  });
+}
+function closeCard(d) {
+  const from = d.offsetHeight;
+  d.classList.remove("is-open");
+  animateHeight(d, from, closedHeight(d), 520).then(() => { if (!d.classList.contains("is-open")) d.open = false; });
+}
+cards.forEach(d => $("summary", d).addEventListener("click", e => {
+  e.preventDefault();
+  (d.classList.contains("is-open") ? closeCard : openCard)(d);
 }));
+
+// Content drifts in as it scrolls into view (starts once the intro screen is gone).
+let revealsStarted = false;
+function startReveals() {
+  if (revealsStarted) return; revealsStarted = true;
+  let pending = $$(".reveal");
+  if (reduceMotion) { pending.forEach(el => el.classList.add("in")); return; }
+  // Plain position check (no IntersectionObserver): runs now and on scroll, works in every in-app browser.
+  let queued = false;
+  const check = () => {
+    queued = false;
+    let batch = 0;
+    const atBottom = scrollY + innerHeight >= document.documentElement.scrollHeight - 4;
+    pending = pending.filter(el => {
+      if (!atBottom && el.getBoundingClientRect().top > innerHeight * 0.94) return true;
+      if (!el.style.getPropertyValue("--d")) el.style.setProperty("--d", Math.min(batch++, 5) * 0.07 + "s");
+      el.classList.add("in");
+      return false;
+    });
+    if (!pending.length) { removeEventListener("scroll", onScroll); removeEventListener("resize", onScroll); }
+  };
+  // Throttled by time, not by animation frame, so it can't stall in throttled webviews.
+  let lastRun = 0;
+  const onScroll = () => {
+    const now = Date.now();
+    if (now - lastRun > 80) { lastRun = now; check(); }
+    else if (!queued) { queued = true; setTimeout(check, 90); }
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", onScroll, { passive: true });
+  check();
+}
+setTimeout(startReveals, 8000); // safety net
+
+// Gentle parallax on the hero photo.
+const heroPhoto = $(".hero-photo");
+let ticking = false;
+function parallax() {
+  ticking = false;
+  const y = Math.min(scrollY, 700);
+  heroPhoto.style.transform = `translate3d(0, ${y * 0.28}px, 0) scale(${1.08 + y * 0.00012})`;
+}
+if (!reduceMotion) addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(parallax); } }, { passive: true });
 
 // Chip groups: single choice, or append to the textarea for notes.
 $$(".chips").forEach(g => g.addEventListener("click", e => {
@@ -454,9 +572,10 @@ song.addEventListener("play", setMusicUI);
 song.addEventListener("pause", setMusicUI);
 
 function hideIntro() {
-  if (!intro || intro.classList.contains("gone")) return;
+  if (!intro || intro.classList.contains("gone")) { startReveals(); return; }
   intro.classList.add("gone");
   document.documentElement.classList.remove("locked");
+  setTimeout(startReveals, 250);
 }
 intro.addEventListener("click", () => { userMuted = false; startMusic(); hideIntro(); });
 intro.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); intro.click(); } });
