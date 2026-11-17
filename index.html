@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>document.documentElement.classList.add("js","locked")</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Zabih Naseri</title>
 <meta name="description" content="Zabih Naseri, New York City. Run with him, dare him, leave a note or make him an offer. Everything goes through Instagram DM.">
@@ -97,6 +98,23 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:0 14px;min-height:40px;font:500 14px/1 "DM Sans";cursor:pointer}
   .chip[aria-pressed="true"]{border-color:transparent;background:#fff;color:#111;font-weight:700}
+  /* ---------- tap-to-enter intro ---------- */
+  .intro{display:none}
+  .js .intro{position:fixed;inset:0;z-index:100;display:grid;place-items:start center;padding-top:calc(12svh + env(safe-area-inset-top));background:var(--bg);cursor:pointer;overflow:hidden;
+             transition:opacity .5s ease, visibility .5s;-webkit-tap-highlight-color:transparent}
+  .js .intro.gone{opacity:0;visibility:hidden;pointer-events:none}
+  html.locked, html.locked body{overflow:hidden}
+  .intro-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 70%;filter:brightness(.6) saturate(1.1)}
+  .intro-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;padding:24px;color:#fff;text-align:center}
+  .intro-flag{width:64px;height:42px;border-radius:999px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+  .intro-flag img{width:100%;height:100%;object-fit:cover;object-position:35% 45%}
+  .intro h2{font-size:clamp(48px,14vw,68px);font-weight:800;text-shadow:0 2px 24px rgba(0,0,0,.4)}
+  .intro h2 span{color:var(--sand)}
+  .intro-btn{display:inline-flex;align-items:center;justify-content:center;min-height:60px;padding:0 30px;border-radius:999px;background:#fff;color:#111;
+             font:800 18px/1 "DM Sans";animation:ring 1.8s ease-out infinite}
+  @keyframes ring{0%{box-shadow:0 0 0 0 rgba(255,255,255,.55)}80%,100%{box-shadow:0 0 0 18px rgba(255,255,255,0)}}
+  .intro small{font-size:13px;opacity:.8;font-weight:500}
+
   /* ---------- music toggle ---------- */
   .music{position:fixed;z-index:40;top:calc(16px + env(safe-area-inset-top));right:max(16px, calc(50% - 240px + 16px));
          display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;cursor:pointer;font-size:18px;
@@ -136,6 +154,15 @@
 </style>
 </head>
 <body>
+<div class="intro" id="intro" role="button" tabindex="0" aria-label="Tap to enter, music will play">
+  <img class="intro-bg" src="zabih.jpg" alt="">
+  <div class="intro-inner">
+    <span class="intro-flag"><img src="usa-flag.jpg" alt=""></span>
+    <h2>Zabih <span>Naseri</span></h2>
+    <span class="intro-btn">▶&nbsp; Tap to enter</span>
+    <small>🎵 Sound on</small>
+  </div>
+</div>
 <!-- Instagram glyph, drawn as a vector so it's crisp with no white edges -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
@@ -350,9 +377,10 @@ const MESSAGES = {
   strava: () => "Hey Zabih! What's your Strava? I want to follow your runs 👟"
 };
 /* ---------- Music ----------
-   Browsers (iPhone Safari, Instagram's in-app browser) block sound until the visitor taps.
-   So: try to autoplay; if blocked, start on the first tap anywhere. The button mutes/unmutes. */
-const song = $("#song"), musicBtn = $("#musicBtn");
+   Phones (iPhone Safari, Instagram's in-app browser) never allow sound before the visitor taps.
+   So the page opens on a "Tap to enter" screen; that first tap starts the music straight away.
+   Where real autoplay is allowed (most computers), the intro screen is skipped. */
+const song = $("#song"), musicBtn = $("#musicBtn"), intro = $("#intro");
 let userMuted = false, wasPlaying = false;
 song.volume = 0.7;
 function setMusicUI() {
@@ -363,25 +391,41 @@ function setMusicUI() {
   musicBtn.setAttribute("aria-label", on ? "Mute music" : "Play music");
   $(".lbl", musicBtn).textContent = on ? "Music on" : (userMuted ? "Music off" : "Tap for music");
 }
-function startMusic() { return song.play().then(setMusicUI).catch(setMusicUI); }
+function startMusic() { return song.play().then(() => { setMusicUI(); return true; }).catch(() => { setMusicUI(); return false; }); }
 song.addEventListener("play", setMusicUI);
 song.addEventListener("pause", setMusicUI);
+
+function hideIntro() {
+  if (!intro || intro.classList.contains("gone")) return;
+  intro.classList.add("gone");
+  document.documentElement.classList.remove("locked");
+}
+intro.addEventListener("click", () => { userMuted = false; startMusic(); hideIntro(); });
+intro.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); intro.click(); } });
 
 musicBtn.addEventListener("click", e => {
   e.stopPropagation();
   if (song.paused) { userMuted = false; startMusic(); }
   else { userMuted = true; song.pause(); }
 });
+
+// Backup: if music still isn't playing, start it on the next real tap. On iPhone only these
+// events count as a tap for sound (touchstart/pointerdown don't), and a scroll doesn't count.
+const TAP_EVENTS = ["click", "touchend", "pointerup", "keydown"];
 const firstTap = () => {
-  if (!userMuted && song.paused) startMusic();
-  ["pointerdown", "touchstart", "keydown"].forEach(t => removeEventListener(t, firstTap, true));
+  if (userMuted || !song.paused) return stopListening();
+  startMusic().then(ok => { if (ok) stopListening(); });
 };
-["pointerdown", "touchstart", "keydown"].forEach(t => addEventListener(t, firstTap, { capture: true, passive: true }));
+const stopListening = () => TAP_EVENTS.forEach(t => removeEventListener(t, firstTap, true));
+TAP_EVENTS.forEach(t => addEventListener(t, firstTap, { capture: true, passive: true }));
+
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) { wasPlaying = !song.paused; song.pause(); }
   else if (wasPlaying && !userMuted) startMusic();
 });
-startMusic();
+
+// Try real autoplay; if the browser allows it, skip the intro screen.
+startMusic().then(ok => { if (ok) hideIntro(); });
 
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-send]"); if (!b) return;
