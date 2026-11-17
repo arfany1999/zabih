@@ -39,21 +39,23 @@
   @media (min-width:560px){ .page{padding-top:24px} .hero{border-radius:28px} }
 
   /* ---------- hero ---------- */
-  .hero{position:relative;overflow:hidden;min-height:min(78svh,680px);display:flex;align-items:flex-end;color:#fff;
-        background:linear-gradient(180deg,#1f5fb3,#3e8ee0 45%,#2a9fae 75%,#06223f)}
-  .hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 60%}
-  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,34,63,0) 35%,rgba(6,34,63,.55) 70%,var(--bg) 100%)}
-  .hero-inner{position:relative;z-index:1;width:100%;padding:0 16px 18px}
-  .flag-pill{display:inline-flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:999px;
+  /* Photo on top, text below his feet: nothing sits on his face or body. */
+  .hero{position:relative;overflow:hidden;color:#fff;background:var(--bg)}
+  .hero-media{position:relative;height:clamp(380px,62svh,560px);background:linear-gradient(180deg,#1f5fb3,#3e8ee0 45%,#2a9fae 75%,#06223f)}
+  .hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 58%}
+  .hero-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,34,63,.25) 0%,rgba(6,34,63,0) 18%,rgba(6,34,63,0) 62%,var(--bg) 100%)}
+  .hero-inner{position:relative;z-index:1;width:100%;margin-top:-64px;padding:0 16px 18px}
+  .flag-pill{position:absolute;z-index:1;top:calc(16px + env(safe-area-inset-top));left:16px;
+             display:inline-flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:999px;
              background:rgba(6,34,63,.45);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
              font-weight:700;font-size:14px}
   .flag{width:48px;height:32px;border-radius:999px;overflow:hidden;flex:none;box-shadow:0 2px 10px rgba(0,0,0,.3);background:linear-gradient(#b22234 0 50%,#fff 50%)}
   .flag img{width:100%;height:100%;object-fit:cover;object-position:35% 45%;transform-origin:left center;animation:wave 3.5s ease-in-out infinite}
   @keyframes wave{0%,100%{transform:scale(1.12) skewY(0)}50%{transform:scale(1.2) skewY(-3deg)}}
-  .hero h1{font-size:clamp(52px,15vw,72px);font-weight:800;margin-top:14px;text-shadow:0 2px 24px rgba(6,34,63,.35)}
+  .hero h1{font-size:clamp(52px,15vw,72px);font-weight:800;text-shadow:0 2px 24px rgba(6,34,63,.35)}
   .hero h1 span{color:var(--sand)}
   .handle{display:inline-flex;align-items:center;gap:8px;margin-top:8px;font-weight:700;opacity:.95;text-decoration:none}
-  .handle img{width:22px;height:22px;border-radius:6px}
+  .ig-logo{width:22px;height:22px;flex:none;display:block}
 
   /* ---------- buttons ---------- */
   .btn{appearance:none;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;padding:0 20px;border-radius:16px;
@@ -61,7 +63,6 @@
   .btn:active{transform:scale(.97)}
   .btn-ig{background:var(--ig);box-shadow:0 10px 28px rgba(214,41,118,.35)}
   .btn-light{background:#fff;color:#111}
-  .btn img{width:22px;height:22px;border-radius:6px}
   .cta-row{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-top:16px}
 
   /* ---------- how it works ---------- */
@@ -110,21 +111,42 @@
 </style>
 </head>
 <body>
+<!-- Instagram glyph, drawn as a vector so it's crisp with no white edges -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="igGrad" cx="0.3" cy="1.07" r="1.5">
+      <stop offset="0" stop-color="#fdf497"/>
+      <stop offset="0.05" stop-color="#fdf497"/>
+      <stop offset="0.45" stop-color="#fd5949"/>
+      <stop offset="0.6" stop-color="#d6249f"/>
+      <stop offset="0.9" stop-color="#285aeb"/>
+    </radialGradient>
+  </defs>
+  <symbol id="igLogo" viewBox="0 0 24 24">
+    <rect width="24" height="24" rx="6.5" fill="url(#igGrad)"/>
+    <rect x="5" y="5" width="14" height="14" rx="4.2" fill="none" stroke="#fff" stroke-width="1.9"/>
+    <circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.9"/>
+    <circle cx="16.4" cy="7.6" r="1.15" fill="#fff"/>
+  </symbol>
+</svg>
+
 <div class="page">
 
   <!-- ============ HERO ============ -->
   <header class="hero">
-    <img class="hero-photo js-img" src="zabih.jpg" alt="Zabih standing waist-deep in clear blue lake water under a bright sky">
-    <div class="hero-inner">
+    <div class="hero-media">
+      <img class="hero-photo js-img" src="zabih.jpg" alt="Zabih standing waist-deep in clear blue lake water under a bright sky">
       <span class="flag-pill">
         <span class="flag"><img class="js-img" src="usa-flag.jpg" alt="American flag"></span>
         Living in New York City, baby
       </span>
+    </div>
+    <div class="hero-inner">
       <h1>Zabih <span>Naseri</span></h1>
-      <a class="handle js-ig" href="#" target="_blank" rel="noopener"><img class="js-img" src="instagram.png" alt="">@zabih_naseri</a>
+      <a class="handle js-ig" href="#" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg>@zabih_naseri</a>
       <div class="cta-row">
         <a class="btn btn-ig js-dm-plain" href="#" target="_blank" rel="noopener">💬 DM me</a>
-        <a class="btn btn-light js-ig" href="#" target="_blank" rel="noopener"><img class="js-img" src="instagram.png" alt="">Follow</a>
+        <a class="btn btn-light js-ig" href="#" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg>Follow</a>
       </div>
     </div>
   </header>
