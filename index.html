@@ -164,6 +164,25 @@
   textarea:focus{border-color:#fff}
   textarea::placeholder{color:#7f97ae}
 
+  /* ---------- Melbourne ---------- */
+  .mel{margin:44px 16px 0;padding-top:34px;border-top:1px solid var(--line)}
+  .mel-head{display:flex;align-items:center;gap:10px}
+  .au-flag{width:48px;height:24px;border-radius:5px;overflow:hidden;flex:none;box-shadow:0 2px 10px rgba(0,0,0,.35);background:#012169}
+  .au-flag img{width:100%;height:100%;object-fit:cover}
+  .mel-kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffcd00}
+  .mel-title{font-size:clamp(50px,15.5vw,74px);font-weight:800;letter-spacing:-.03em;margin-top:12px;
+             background:linear-gradient(90deg,#fff 0%,#fff 55%,#ffcd00 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .mel-sub{margin:8px 0 0;color:var(--muted);font-size:15px}
+  .mel-sub b{color:var(--ink)}
+  .mel-card{position:relative;margin-top:16px;border-radius:24px;overflow:hidden;aspect-ratio:4/5;background:linear-gradient(160deg,#4b5a3c,#1b2a1d);border:1px solid var(--line)}
+  .mel-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+  .mel-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,34,63,0) 52%,rgba(6,34,63,.65) 74%,rgba(6,34,63,.95) 100%)}
+  .mel-overlay{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:16px}
+  .mel-handle{display:inline-flex;align-items:center;gap:8px;font-weight:700;text-decoration:none;color:#fff}
+  .mel .cta-row{margin-top:12px}
+  .mel-credit{margin:8px 2px 0;font-size:11px;color:#6f86a0}
+  .mel-credit a{color:inherit}
+
   footer{margin:22px 16px 0;text-align:center;color:var(--muted);font-size:13px}
 
   .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;background:#fff;color:#111;padding:12px 18px;border-radius:999px;
@@ -357,6 +376,27 @@
     </a>
 
   </div>
+
+  <!-- ============ MELBOURNE (for @hamidthnx) ============ -->
+  <section class="mel" aria-labelledby="melTitle">
+    <div class="mel-head reveal">
+      <span class="au-flag"><img src="au-flag.png" alt="Australian flag" loading="lazy" decoding="async"></span>
+      <span class="mel-kicker">Melbourne, Australia</span>
+    </div>
+    <h2 class="mel-title reveal" id="melTitle">MELBOURNE</h2>
+    <p class="mel-sub reveal">In Melbourne? 🦘 This one's for you. Follow and DM <b>@hamidthnx</b>.</p>
+    <div class="mel-card reveal">
+      <img class="mel-photo js-img" src="kangaroo.jpg" alt="Eastern grey kangaroo looking at the camera" loading="lazy" decoding="async">
+      <div class="mel-overlay">
+        <a class="mel-handle js-ig-mel" href="https://www.instagram.com/hamidthnx/" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg>@hamidthnx</a>
+        <div class="cta-row">
+          <a class="btn btn-ig" href="https://ig.me/m/hamidthnx" target="_blank" rel="noopener" aria-label="Send a DM to @hamidthnx">💬 Send DM</a>
+          <a class="btn btn-light" href="https://www.instagram.com/hamidthnx/" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg>Follow</a>
+        </div>
+      </div>
+    </div>
+    <p class="mel-credit">Kangaroo photo: <a href="https://commons.wikimedia.org/wiki/File:Forester_kangaroo_(Macropus_giganteus_tasmaniensis)_portrait_Esk_Valley.jpg" target="_blank" rel="noopener">Charles J. Sharp</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a></p>
+  </section>
 
   <footer class="reveal">Zabih Naseri · New York City 🇺🇸</footer>
 </div>
