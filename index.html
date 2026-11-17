@@ -97,6 +97,14 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:0 14px;min-height:40px;font:500 14px/1 "DM Sans";cursor:pointer}
   .chip[aria-pressed="true"]{border-color:transparent;background:#fff;color:#111;font-weight:700}
+  .group-label{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:8px 4px -2px;font:800 13px/1 "Bricolage Grotesque";letter-spacing:.08em;text-transform:uppercase}
+  .group-label:first-child{margin-top:0}
+  .group-label .neg{font:500 12px/1.2 "DM Sans";letter-spacing:0;text-transform:none;color:var(--muted);text-align:right}
+  .tag-paid{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#26c281;color:#04140c;font:800 14px/1 "DM Sans"}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  input{width:100%;min-height:48px;font:400 16px/1.2 "DM Sans";color:var(--ink);background:rgba(0,0,0,.18);border:1.5px solid var(--line);border-radius:14px;padding:0 14px;outline:none}
+  input:focus{border-color:#fff}
+  input::placeholder{color:#7f97ae}
   textarea{width:100%;font:400 16px/1.4 "DM Sans";color:var(--ink);background:rgba(0,0,0,.18);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;outline:none;resize:vertical;min-height:84px}
   textarea:focus{border-color:#fff}
   textarea::placeholder{color:#7f97ae}
@@ -156,6 +164,8 @@
   <!-- ============ ACTIONS (all go to IG DM) ============ -->
   <div class="list" id="list">
 
+    <div class="group-label"><span>💵 Paid gigs</span><span class="neg">You name the price, we negotiate</span></div>
+
     <details class="offer" name="act">
       <summary>
         <span class="ico">💪</span>
@@ -171,7 +181,8 @@
     <details name="act">
       <summary>
         <span class="ico">🏃</span>
-        <span class="txt"><strong>Run with me in NYC</strong><small>Pick a route and I'll tell you when</small></span>
+        <span class="txt"><strong>Book a run with me</strong><small>Paid running partner or pacer in NYC</small></span>
+        <span class="tag-paid">$</span>
         <span class="chev">›</span>
       </summary>
       <div class="body">
@@ -181,14 +192,19 @@
           <button type="button" class="chip" aria-pressed="false">Hudson River Greenway</button>
           <button type="button" class="chip" aria-pressed="false">East River</button>
         </div>
-        <button class="btn btn-ig" type="button" data-send="run">💬 I'm in, DM him</button>
+        <div class="pair">
+          <input id="runWhen" placeholder="When? e.g. Sat 7am" autocomplete="off">
+          <input id="runOffer" inputmode="decimal" placeholder="Your offer $" autocomplete="off">
+        </div>
+        <button class="btn btn-ig" type="button" data-send="run">💬 Book it in DM</button>
       </div>
     </details>
 
     <details name="act">
       <summary>
         <span class="ico">🔥</span>
-        <span class="txt"><strong>Dare me a distance</strong><small>If I accept, it goes on my story</small></span>
+        <span class="txt"><strong>Pay me to run it</strong><small>You pick the distance, I post the proof</small></span>
+        <span class="tag-paid">$</span>
         <span class="chev">›</span>
       </summary>
       <div class="body">
@@ -198,9 +214,12 @@
           <button type="button" class="chip" aria-pressed="false">Half marathon</button>
           <button type="button" class="chip" aria-pressed="false">Full marathon</button>
         </div>
-        <button class="btn btn-ig" type="button" data-send="dare">💬 Send the dare</button>
+        <input id="dareOffer" inputmode="decimal" placeholder="Your offer $" autocomplete="off">
+        <button class="btn btn-ig" type="button" data-send="dare">💬 Send the challenge</button>
       </div>
     </details>
+
+    <div class="group-label"><span>💬 Just say hi</span><span class="neg">Free</span></div>
 
     <details name="act">
       <summary>
@@ -292,13 +311,16 @@ $$(".chips").forEach(g => g.addEventListener("click", e => {
 }));
 const pick = group => ($(`.chips[data-group="${group}"] .chip[aria-pressed="true"]`) || {}).textContent || "";
 
+const val = sel => $(sel).value.trim();
+const money = sel => { const v = val(sel).replace(/^\$+/, ""); return v ? "$" + v : "$"; };
+
 const MESSAGES = {
   offer: () => {
     const v = $("#offerText").value.trim();
     return "Hey Zabih! I've got a hard job for you 💪" + (v ? `\n\n${v}` : "\n\nThe job: \nThe date: \nMy offer: ");
   },
-  run: () => `Hey Zabih! I want to run with you in NYC 🏃 Route: ${pick("route")}. When are you free?`,
-  dare: () => `Hey Zabih! I dare you to run ${pick("dare")} 🔥 Post it when you do.`,
+  run: () => `Hey Zabih! I'd like to book a paid run with you in NYC 🏃\n\nRoute: ${pick("route")}\nWhen: ${val("#runWhen")}\nMy offer: ${money("#runOffer")}`,
+  dare: () => `Hey Zabih! I'll pay you to run ${pick("dare")} 🔥\n\nMy offer: ${money("#dareOffer")}\nPost the proof when it's done.`,
   note: () => {
     const v = $("#noteText").value.trim();
     return v ? `📌 Note for you:\n\n${v}` : "📌 Hey Zabih! Just leaving you a note: ";
