@@ -1,0 +1,11 @@
+# Publish only the site files
+*
+!.gitignore
+!.nojekyll
+!index.html
+!zabih.jpg
+!usa-flag.jpg
+!eagle.jpg
+!instagram.png
+!og-image.jpg
+!apple-touch-icon.png
