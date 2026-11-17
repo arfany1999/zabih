@@ -97,6 +97,23 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:0 14px;min-height:40px;font:500 14px/1 "DM Sans";cursor:pointer}
   .chip[aria-pressed="true"]{border-color:transparent;background:#fff;color:#111;font-weight:700}
+  /* ---------- music toggle ---------- */
+  .music{position:fixed;z-index:40;top:calc(16px + env(safe-area-inset-top));right:max(16px, calc(50% - 240px + 16px));
+         display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;cursor:pointer;font-size:18px;
+         background:rgba(6,34,63,.55);color:#fff;border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+         font:700 13px/1 "DM Sans";-webkit-tap-highlight-color:transparent}
+  .music .bars{display:none;align-items:flex-end;gap:2px;height:14px}
+  .music.playing .bars{display:inline-flex}
+  .music.playing .note{display:none}
+  .music .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .music .bars i{width:3px;height:4px;border-radius:2px;background:#fff}
+  .music.playing .bars i{animation:eq .9s ease-in-out infinite}
+  .music.playing .bars i:nth-child(2){animation-delay:.2s}
+  .music.playing .bars i:nth-child(3){animation-delay:.4s}
+  @keyframes eq{0%,100%{height:4px}50%{height:14px}}
+  .music.waiting{animation:nudge 1.6s ease-in-out infinite}
+  @keyframes nudge{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.45)}60%{box-shadow:0 0 0 10px rgba(255,255,255,0)}}
+
   .group-label{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:8px 4px -2px;font:800 13px/1 "Bricolage Grotesque";letter-spacing:.08em;text-transform:uppercase}
   .group-label:first-child{margin-top:0}
   .group-label .neg{font:500 12px/1.2 "DM Sans";letter-spacing:0;text-transform:none;color:var(--muted);text-align:right}
@@ -251,6 +268,11 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<audio id="song" src="song.m4a" loop preload="auto" playsinline></audio>
+<button class="music" id="musicBtn" type="button" aria-pressed="false" aria-label="Play music">
+  <span class="note" aria-hidden="true">🎵</span><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">Play music</span>
+</button>
+
 <script>
 const IG = "zabih_naseri";
 const IG_URL = "https://www.instagram.com/" + IG + "/";
@@ -327,6 +349,40 @@ const MESSAGES = {
   },
   strava: () => "Hey Zabih! What's your Strava? I want to follow your runs 👟"
 };
+/* ---------- Music ----------
+   Browsers (iPhone Safari, Instagram's in-app browser) block sound until the visitor taps.
+   So: try to autoplay; if blocked, start on the first tap anywhere. The button mutes/unmutes. */
+const song = $("#song"), musicBtn = $("#musicBtn");
+let userMuted = false, wasPlaying = false;
+song.volume = 0.7;
+function setMusicUI() {
+  const on = !song.paused;
+  musicBtn.classList.toggle("playing", on);
+  musicBtn.classList.toggle("waiting", !on && !userMuted);
+  musicBtn.setAttribute("aria-pressed", String(on));
+  musicBtn.setAttribute("aria-label", on ? "Mute music" : "Play music");
+  $(".lbl", musicBtn).textContent = on ? "Music on" : (userMuted ? "Music off" : "Tap for music");
+}
+function startMusic() { return song.play().then(setMusicUI).catch(setMusicUI); }
+song.addEventListener("play", setMusicUI);
+song.addEventListener("pause", setMusicUI);
+
+musicBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  if (song.paused) { userMuted = false; startMusic(); }
+  else { userMuted = true; song.pause(); }
+});
+const firstTap = () => {
+  if (!userMuted && song.paused) startMusic();
+  ["pointerdown", "touchstart", "keydown"].forEach(t => removeEventListener(t, firstTap, true));
+};
+["pointerdown", "touchstart", "keydown"].forEach(t => addEventListener(t, firstTap, { capture: true, passive: true }));
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { wasPlaying = !song.paused; song.pause(); }
+  else if (wasPlaying && !userMuted) startMusic();
+});
+startMusic();
+
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-send]"); if (!b) return;
   e.preventDefault();
