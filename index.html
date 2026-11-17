@@ -182,6 +182,10 @@
   .mel .cta-row{margin-top:12px}
   .mel-credit{margin:8px 2px 0;font-size:11px;color:#6f86a0}
   .mel-credit a{color:inherit}
+  .mel-offer{margin-top:14px;border-color:rgba(255,205,0,.5);background:linear-gradient(120deg,rgba(255,205,0,.16),rgba(0,132,61,.1) 60%)}
+  .mel-offer::before{background-image:url("kangaroo.jpg");background-position:50% 30%}
+  .mel-offer .ico{background:#00843d}
+  .mel-offer .open-badge{color:#ffcd00}
 
   footer{margin:22px 16px 0;text-align:center;color:var(--muted);font-size:13px}
 
@@ -396,6 +400,19 @@
       </div>
     </div>
     <p class="mel-credit">Kangaroo photo: <a href="https://commons.wikimedia.org/wiki/File:Forester_kangaroo_(Macropus_giganteus_tasmaniensis)_portrait_Esk_Valley.jpg" target="_blank" rel="noopener">Charles J. Sharp</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a></p>
+
+    <details class="offer mel-offer reveal">
+      <summary>
+        <span class="ico">💪</span>
+        <span class="txt"><strong>Guess what? Pay me good, I'll do hard jobs too</strong><span class="open-badge">Negotiation open</span></span>
+        <span class="tag-paid">$</span>
+        <span class="chev">›</span>
+      </summary>
+      <div class="body">
+        <textarea id="melOfferText" maxlength="400" placeholder="The job, the date, your offer (AUD)…"></textarea>
+        <button class="btn btn-ig" type="button" data-send="melOffer" data-to="hamidthnx">💬 Send offer to @hamidthnx</button>
+      </div>
+    </details>
   </section>
 
   <footer class="reveal">Zabih Naseri · New York City 🇺🇸</footer>
@@ -415,7 +432,7 @@
       <li>Long-press the message box, tap <b>Paste</b></li>
       <li>Hit <b>Send</b> 🚀</li>
     </ol>
-    <a class="btn btn-ig" id="openDm" href="#" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg>Open DM with @zabih_naseri</a>
+    <a class="btn btn-ig" id="openDm" href="#" target="_blank" rel="noopener"><svg class="ig-logo" aria-hidden="true"><use href="#igLogo"/></svg><span id="openDmLabel">Open DM with @zabih_naseri</span></a>
     <button class="btn btn-ghost-dark" id="copyAgain" type="button">Copy again</button>
   </div>
 </div>
@@ -477,8 +494,11 @@ function closeSheet() {
   document.documentElement.classList.remove("locked");
   setTimeout(() => { sheet.hidden = true; }, 250);
 }
-function dm(text) {
+// `to` is the Instagram handle the DM goes to (Zabih by default, @hamidthnx for Melbourne).
+function dm(text, to = IG) {
   lastText = text;
+  $("#openDm").href = "https://ig.me/m/" + to;
+  $("#openDmLabel").textContent = "Open DM with @" + to;
   showSheet(copyNow(text));
 }
 $("#copyAgain").addEventListener("click", () => {
@@ -494,7 +514,7 @@ addEventListener("keydown", e => { if (e.key === "Escape" && !sheet.hidden) clos
 // Cards glide open and closed; only one open at a time.
 const EASE = "cubic-bezier(.22,1,.36,1)";
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const cards = $$("#list details");
+const cards = $$("details");
 function closedHeight(d) { const cs = getComputedStyle(d); return $("summary", d).offsetHeight + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth); }
 function animateHeight(d, from, to, ms) {
   if (d._anim) d._anim.cancel();
@@ -580,6 +600,10 @@ const val = sel => $(sel).value.trim();
 const money = sel => { const v = val(sel).replace(/^\$+/, ""); return v ? "$" + v : "$"; };
 
 const MESSAGES = {
+  melOffer: () => {
+    const v = $("#melOfferText").value.trim();
+    return "Hey Hamid! I've got a hard job for you in Melbourne 💪" + (v ? `\n\n${v}` : "\n\nThe job: \nThe date: \nMy offer (AUD): ");
+  },
   offer: () => {
     const v = $("#offerText").value.trim();
     return "Hey Zabih! I've got a hard job for you 💪" + (v ? `\n\n${v}` : "\n\nThe job: \nThe date: \nMy offer: ");
@@ -647,7 +671,7 @@ startMusic().then(ok => { if (ok) hideIntro(); });
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-send]"); if (!b) return;
   e.preventDefault();
-  dm(MESSAGES[b.dataset.send]());
+  dm(MESSAGES[b.dataset.send](), b.dataset.to || IG);
 });
 </script>
 </body>
